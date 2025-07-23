@@ -710,73 +710,85 @@
                 name: 'PARK MANSION',
                 location: 'Minami Azabu',
                 image: 'images/projects/park-mansion/main.jpg',
-                duration: 4000
+                duration: 4000,
+                url: 'projects/park-mansion-nuevo.html'
             },
             {
                 name: 'KAWANA',
                 location: 'Silence Kawana',
                 image: 'images/projects/kawana/main.jpg',
-                duration: 4000
+                duration: 4000,
+                url: 'projects/kawana-nuevo.html'
             },
             {
                 name: 'PARK LE JADE',
                 location: 'Shirokane Residence',
                 image: 'images/projects/park-le-jade/main.jpg',
-                duration: 4000
+                duration: 4000,
+                url: 'projects/park-mansion-nuevo.html' // Placeholder
             },
             {
                 name: 'SEVENS VILLA',
                 location: 'Karuizawa',
                 image: 'images/projects/sevens-villa/main.jpg',
-                duration: 4000
+                duration: 4000,
+                url: 'projects/sevens-villa.html'
             },
             {
                 name: 'HIKAWA GARDENS',
                 location: 'Tokyo',
                 image: 'images/projects/hikawa-gardens/main.jpg',
-                duration: 4000
+                duration: 4000,
+                url: 'projects/hikawa-gardens.html'
             },
             {
                 name: 'ONE AVENUE',
                 location: 'Central District',
                 image: 'images/projects/one-avenue/main.jpg',
-                duration: 4000
+                duration: 4000,
+                url: 'projects/one-avenue.html'
             },
             {
                 name: 'CENTURY FOREST',
                 location: 'Urban Integration',
                 image: 'images/projects/century-forest/main.jpg',
-                duration: 4000
+                duration: 4000,
+                url: 'projects/park-mansion-nuevo.html' // Placeholder
             },
             {
                 name: 'PROUD',
                 location: 'Rokakoen',
                 image: 'images/projects/proud/main.jpg',
-                duration: 4000
+                duration: 4000,
+                url: 'projects/park-mansion-nuevo.html' // Placeholder
             },
             {
                 name: 'NISHIAZABU RESIDENCE',
                 location: 'Nishiazabu',
                 image: 'images/projects/nishiazabu-residence/main.jpg',
-                duration: 4000
+                duration: 4000,
+                url: 'projects/park-mansion-nuevo.html' // Placeholder
             },
             {
                 name: 'ITOHPIA JIYUGAOKA',
                 location: 'Jiyugaoka',
-                image: 'images/projects/itohpia-jiyugaoka/main.jpg',
-                duration: 4000
+                image: 'images/projects/itohpia-jiyugaoka.html',
+                duration: 4000,
+                url: 'projects/itohpia-jiyugaoka.html'
             },
             {
                 name: 'URBAN VILLA',
                 location: 'Central Tokyo',
                 image: 'images/projects/urban-villa/main.jpg',
-                duration: 4000
+                duration: 4000,
+                url: 'projects/park-mansion-nuevo.html' // Placeholder
             },
             {
                 name: 'MODERN HOUSE',
                 location: 'Shibuya',
                 image: 'images/projects/modern-house/main.jpg',
-                duration: 4000
+                duration: 4000,
+                url: 'projects/casa-moderna.html'
             }
         ];
         
@@ -1290,23 +1302,13 @@
         }
 
         function goToProject(index) {
-            // Usar índice para crear URLs consistentes
-            const projectUrls = [
-                'projects/park-mansion-nuevo.html',
-                'projects/kawana-nuevo.html',
-                'projects/park-mansion-nuevo.html', // placeholder
-                'projects/kawana-nuevo.html', // placeholder
-                'projects/park-mansion-nuevo.html', // placeholder
-                'projects/kawana-nuevo.html', // placeholder
-                'projects/park-mansion-nuevo.html', // placeholder
-                'projects/kawana-nuevo.html', // placeholder
-                'projects/park-mansion-nuevo.html', // placeholder
-                'projects/kawana-nuevo.html', // placeholder
-                'projects/park-mansion-nuevo.html', // placeholder
-                'projects/kawana-nuevo.html' // placeholder
-            ];
-
-            window.location.href = projectUrls[index] || 'projects/park-mansion-nuevo.html';
+            if (PROJECTS[index] && PROJECTS[index].url) {
+                window.location.href = PROJECTS[index].url;
+            } else {
+                console.error(`No URL found for project at index: ${index}`);
+                // Fallback to a default page if needed
+                window.location.href = 'projects/park-mansion-nuevo.html';
+            }
         }
 
         // CLICKS EN PROYECTOS (NAVEGACIÓN A PÁGINAS INDIVIDUALES)
