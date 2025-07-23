@@ -1024,12 +1024,11 @@
                             document.querySelector('.intro-loader').style.transition = 'opacity 0.5s';
                             document.querySelector('.intro-loader').style.opacity = '0';
 
-                            if (window.startFragmentAnimation) {
-                                window.startFragmentAnimation();
-                            }
-
-                            // Después de la animación de fragmentos, mostrar la pantalla principal
-                            // This is now handled by the onComplete callback of the timeline
+                            setTimeout(() => {
+                                if (window.startFragmentAnimation) {
+                                    window.startFragmentAnimation();
+                                }
+                            }, 500);
 
                         }, 1000);
                     }
