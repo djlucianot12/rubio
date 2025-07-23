@@ -1366,11 +1366,18 @@
 
             var tl = new TimelineMax({
                 paused: true,
-                onComplete: function() {
-                    // After the transition, hide the three.js container and show the main screen
+                onComplete: function () {
+                    document.getElementById('three-container').style.opacity = 0;
+                    const introScreen = document.getElementById('intro-screen');
+                    const mainScreen = document.getElementById('main-screen');
+
+                    introScreen.style.transition = 'opacity 1s ease-out';
+                    introScreen.style.opacity = '0';
+
                     setTimeout(() => {
-                        document.getElementById('three-container').style.opacity = 0;
-                        const mainScreen = document.getElementById('main-screen');
+                        introScreen.classList.add('hidden');
+                        introScreen.style.display = 'none';
+
                         mainScreen.classList.add('visible');
                         mainScreen.style.opacity = '1';
 
@@ -1380,7 +1387,7 @@
                             startProgress();
                             console.log('✅ Main screen inicializado');
                         }, 300);
-                    }, 500);
+                    }, 1000);
                 }
             });
 
