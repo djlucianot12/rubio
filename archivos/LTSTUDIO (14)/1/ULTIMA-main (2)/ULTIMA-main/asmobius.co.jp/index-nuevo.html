@@ -1029,28 +1029,7 @@
                             }
 
                             // Después de la animación de fragmentos, mostrar la pantalla principal
-                            setTimeout(() => {
-                                const introScreen = document.getElementById('intro-screen');
-                                const mainScreen = document.getElementById('main-screen');
-
-                                introScreen.style.transition = 'opacity 1s ease-out';
-                                introScreen.style.opacity = '0';
-
-                                setTimeout(() => {
-                                    introScreen.classList.add('hidden');
-                                    introScreen.style.display = 'none';
-
-                                    mainScreen.classList.add('visible');
-                                    mainScreen.style.opacity = '1';
-
-                                    // Inicializar main screen
-                                    setTimeout(() => {
-                                        changeProject(0);
-                                        startProgress();
-                                        console.log('✅ Main screen inicializado');
-                                    }, 300);
-                                }, 1000);
-                            }, 3000); // Duración de la animación de fragmentos
+                            // This is now handled by the onComplete callback of the timeline
 
                         }, 1000);
                     }
@@ -1386,7 +1365,25 @@
 
             root.scene.add(slide);
 
-            var tl = new TimelineMax({paused: true});
+            var tl = new TimelineMax({
+                paused: true,
+                onComplete: function() {
+                    // After the transition, hide the three.js container and show the main screen
+                    setTimeout(() => {
+                        document.getElementById('three-container').style.opacity = 0;
+                        const mainScreen = document.getElementById('main-screen');
+                        mainScreen.classList.add('visible');
+                        mainScreen.style.opacity = '1';
+
+                        // Initialize main screen
+                        setTimeout(() => {
+                            changeProject(0);
+                            startProgress();
+                            console.log('✅ Main screen inicializado');
+                        }, 300);
+                    }, 500);
+                }
+            });
 
             tl.add(slide.transition(), 0);
 
