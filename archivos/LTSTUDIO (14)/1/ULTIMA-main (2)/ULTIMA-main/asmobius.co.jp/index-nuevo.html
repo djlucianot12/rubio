@@ -805,6 +805,28 @@
             const circleInner = document.querySelector('.circle-inner');
 
             if (circleContainer) {
+                document.addEventListener('mousemove', (e) => {
+                    const rect = circleContainer.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const deltaX = x - centerX;
+                    const deltaY = y - centerY;
+
+                    const rotateX = (deltaY / centerY) * -15;
+                    const rotateY = (deltaX / centerX) * 15;
+
+                    gsap.to(circleContainer, {
+                        rotationX: rotateX,
+                        rotationY: rotateY,
+                        duration: 0.5,
+                        ease: "power2.out"
+                    });
+                });
+
                 // Hover effects
                 circleContainer.addEventListener('mouseenter', () => {
                     isOverCircle = true;
@@ -824,6 +846,12 @@
                     if (circleInner) {
                         circleInner.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                     }
+                    gsap.to(circleContainer, {
+                        rotationX: 0,
+                        rotationY: 0,
+                        duration: 0.5,
+                        ease: "power2.out"
+                    });
                 });
 
                 // Drag functionality
@@ -977,12 +1005,15 @@
 
                             letters.forEach((letter, i) => {
                                 tl.to(letter, {
-                                    x: (Math.random() - 0.5) * 200,
-                                    y: (Math.random() - 0.5) * 200,
+                                    x: (Math.random() - 0.5) * 300,
+                                    y: (Math.random() - 0.5) * 300,
+                                    z: (Math.random() - 0.5) * 300,
+                                    rotationX: Math.random() * 360,
+                                    rotationY: Math.random() * 360,
                                     opacity: 0,
-                                    duration: 1 + Math.random(),
-                                    ease: "power2.inOut"
-                                }, i * 0.05);
+                                    duration: 1.5 + Math.random(),
+                                    ease: "power3.inOut"
+                                }, i * 0.03);
                             });
 
                         }, 1000);
