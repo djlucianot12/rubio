@@ -558,9 +558,26 @@
                 font-size: 24px;
             }
         }
+
+        #three-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1001;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        #three-container.visible {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
+    <div id="three-container"></div>
     <!-- CURSOR PERSONALIZADO -->
     <div class="custom-cursor" id="cursor"></div>
     
@@ -940,6 +957,26 @@
             }
         }
 
+        function createTextTexture(text, style) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const canvasWidth = 1024;
+            const canvasHeight = 512;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
+            ctx.fillStyle = style.backgroundColor;
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            ctx.font = style.font;
+            ctx.fillStyle = style.color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, canvasWidth / 2, canvasHeight / 2);
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
         // ANIMAR TEXTO LETRA POR LETRA
         function animateIntroText() {
             console.log('📝 Iniciando animación de texto intro');
@@ -977,70 +1014,25 @@
                         loaderBar.style.width = '100%';
                     }
 
-                    // Si es la última letra, hacer EXPLOSIÓN ESPECTACULAR
+                    // Si es la última letra, iniciar la animación de fragmentos
                     if (index === letters.length - 1) {
-                        console.log('🎯 Última letra completada, programando EXPLOSIÓN MEGA ESPECTACULAR');
+                        console.log('🎯 Última letra completada, iniciando animación de fragmentos');
                         setTimeout(() => {
-                            console.log('💥 EXPLOSIÓN MEGA ESPECTACULAR INCOMING!');
-
-                            // CREAR EXPLOSIÓN DIRECTA AQUÍ
-                            const introScreen = document.getElementById('intro-screen');
-                            const mainScreen = document.getElementById('main-screen');
-
-                            // EXPLOTAR CADA LETRA
-                            letters.forEach((letter, i) => {
-                                setTimeout(() => {
-                                    console.log(`💥 Explosión letra ${i}`);
-
-                                    // 3 copias volando por letra
-                                    for (let j = 0; j < 3; j++) {
-                                        const flying = letter.cloneNode(true);
-                                        flying.style.position = 'fixed';
-                                        flying.style.zIndex = '10000';
-                                        flying.style.fontSize = '2rem';
-                                        flying.style.fontWeight = 'bold';
-                                        flying.style.color = '#fff';
-                                        flying.style.pointerEvents = 'none';
-
-                                        // Posición inicial igual a la letra original
-                                        const rect = letter.getBoundingClientRect();
-                                        flying.style.left = rect.left + 'px';
-                                        flying.style.top = rect.top + 'px';
-
-                                        document.body.appendChild(flying);
-
-                                        // Animación de vuelo
-                                        const angle = (Math.PI * 2 * j / 3) + (Math.random() * 0.5);
-                                        const distance = 300 + Math.random() * 400;
-                                        const endX = rect.left + Math.cos(angle) * distance;
-                                        const endY = rect.top + Math.sin(angle) * distance;
-
-                                        flying.style.transition = 'all 2s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                                        flying.style.transform = `translate(${endX - rect.left}px, ${endY - rect.top}px) rotate(${360 * 3}deg) scale(${0.1 + Math.random() * 0.3})`;
-                                        flying.style.opacity = '0';
-
-                                        // Limpiar después de la animación
-                                        setTimeout(() => {
-                                            if (flying.parentNode) {
-                                                flying.parentNode.removeChild(flying);
-                                            }
-                                        }, 2000);
-                                    }
-
-                                    // Ocultar letra original con efecto
-                                    letter.style.transition = 'all 0.5s ease-out';
-                                    letter.style.transform = 'scale(0)';
-                                    letter.style.opacity = '0';
-
-                                }, i * 100);
-                            });
-
-                            // Ocultar la barra de carga
+                            // Ocultar texto y barra de carga
+                            introText.style.transition = 'opacity 0.5s';
+                            introText.style.opacity = '0';
+                            document.querySelector('.intro-loader').style.transition = 'opacity 0.5s';
                             document.querySelector('.intro-loader').style.opacity = '0';
 
-                            // Después de 4 segundos, hacer transición final
+                            if (window.startFragmentAnimation) {
+                                window.startFragmentAnimation();
+                            }
+
+                            // Después de la animación de fragmentos, mostrar la pantalla principal
                             setTimeout(() => {
-                                console.log('🌟 Completando transición a main screen');
+                                const introScreen = document.getElementById('intro-screen');
+                                const mainScreen = document.getElementById('main-screen');
+
                                 introScreen.style.transition = 'opacity 1s ease-out';
                                 introScreen.style.opacity = '0';
 
@@ -1058,9 +1050,9 @@
                                         console.log('✅ Main screen inicializado');
                                     }, 300);
                                 }, 1000);
-                            }, 4000);
+                            }, 3000); // Duración de la animación de fragmentos
 
-                        }, 2000); // 2 segundos después de que termine la última letra
+                        }, 1000);
                     }
                 }, index * 150); // 150ms entre letras para mejor visualización
             });
@@ -1362,6 +1354,371 @@
         }
 
         console.log('🎉 LTSD App script cargado completamente');
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/zadvorsky/three.bas@2.4.0/dist/bas.min.js"></script>
+    <script>
+        // CodePen code adapted for this project
+        function initThreeJSAnimation() {
+            var root = new THREERoot({
+                createCameraControls: !true,
+                antialias: (window.devicePixelRatio === 1),
+                fov: 80
+            });
+
+            root.renderer.setClearColor(0x000000, 0);
+            root.renderer.setPixelRatio(window.devicePixelRatio || 1);
+            root.camera.position.set(0, 0, 60);
+
+            var width = 100;
+            var height = 60;
+
+            var slide = new Slide(width, height, 'out');
+
+            const textStyle = {
+                font: "700 48px 'butler_medium', serif",
+                color: '#ffffff',
+                backgroundColor: '#252525'
+            };
+            const textTexture = createTextTexture('LT STUDIO DESIGN', textStyle);
+            slide.setImage(textTexture);
+
+            root.scene.add(slide);
+
+            var tl = new TimelineMax({paused: true});
+
+            tl.add(slide.transition(), 0);
+
+            // This will be called when the intro text animation finishes
+            window.startFragmentAnimation = function() {
+                document.getElementById('three-container').classList.add('visible');
+                tl.play();
+            }
+        }
+
+        ////////////////////
+        // CLASSES
+        ////////////////////
+
+        function Slide(width, height, animationPhase) {
+            var plane = new THREE.PlaneGeometry(width, height, width * 2, height * 2);
+
+            THREE.BAS.Utils.separateFaces(plane);
+
+            var geometry = new SlideGeometry(plane);
+
+            geometry.bufferUVs();
+
+            var aAnimation = geometry.createAttribute('aAnimation', 2);
+            var aStartPosition = geometry.createAttribute('aStartPosition', 3);
+            var aControl0 = geometry.createAttribute('aControl0', 3);
+            var aControl1 = geometry.createAttribute('aControl1', 3);
+            var aEndPosition = geometry.createAttribute('aEndPosition', 3);
+
+            var i, i2, i3, i4, v;
+
+            var minDuration = 0.8;
+            var maxDuration = 1.2;
+            var maxDelayX = 0.9;
+            var maxDelayY = 0.125;
+            var stretch = 0.11;
+
+            this.totalDuration = maxDuration + maxDelayX + maxDelayY + stretch;
+
+            var startPosition = new THREE.Vector3();
+            var control0 = new THREE.Vector3();
+            var control1 = new THREE.Vector3();
+            var endPosition = new THREE.Vector3();
+
+            var tempPoint = new THREE.Vector3();
+
+            function getControlPoint0(centroid) {
+                var signY = Math.sign(centroid.y);
+
+                tempPoint.x = THREE.Math.randFloat(0.1, 0.3) * 50;
+                tempPoint.y = signY * THREE.Math.randFloat(0.1, 0.3) * 70;
+                tempPoint.z = THREE.Math.randFloatSpread(20);
+
+                return tempPoint;
+            }
+
+            function getControlPoint1(centroid) {
+                var signY = Math.sign(centroid.y);
+
+                tempPoint.x = THREE.Math.randFloat(0.3, 0.6) * 50;
+                tempPoint.y = -signY * THREE.Math.randFloat(0.3, 0.6) * 70;
+                tempPoint.z = THREE.Math.randFloatSpread(20);
+
+                return tempPoint;
+            }
+
+            for (i = 0, i2 = 0, i3 = 0, i4 = 0; i < geometry.faceCount; i++, i2 += 6, i3 += 9, i4 += 12) {
+                var face = plane.faces[i];
+                var centroid = THREE.BAS.Utils.computeCentroid(plane, face);
+
+                // animation
+                var duration = THREE.Math.randFloat(minDuration, maxDuration);
+                var delayX = THREE.Math.mapLinear(centroid.x, -width * 0.5, width * 0.5, 0.0, maxDelayX);
+                var delayY;
+
+                if (animationPhase === 'in') {
+                    delayY = THREE.Math.mapLinear(Math.abs(centroid.y), 0, height * 0.5, 0.0, maxDelayY)
+                }
+                else {
+                    delayY = THREE.Math.mapLinear(Math.abs(centroid.y), 0, height * 0.5, maxDelayY, 0.0)
+                }
+
+                for (v = 0; v < 6; v += 2) {
+                    aAnimation.array[i2 + v]     = delayX + delayY + (Math.random() * stretch * duration);
+                    aAnimation.array[i2 + v + 1] = duration;
+                }
+
+                // positions
+
+                endPosition.copy(centroid);
+                startPosition.copy(centroid);
+
+                if (animationPhase === 'in') {
+                    control0.copy(centroid).sub(getControlPoint0(centroid));
+                    control1.copy(centroid).sub(getControlPoint1(centroid));
+                }
+                else { // out
+                    control0.copy(centroid).add(getControlPoint0(centroid));
+                    control1.copy(centroid).add(getControlPoint1(centroid));
+                }
+
+                for (v = 0; v < 9; v += 3) {
+                    aStartPosition.array[i3 + v]     = startPosition.x;
+                    aStartPosition.array[i3 + v + 1] = startPosition.y;
+                    aStartPosition.array[i3 + v + 2] = startPosition.z;
+
+                    aControl0.array[i3 + v]     = control0.x;
+                    aControl0.array[i3 + v + 1] = control0.y;
+                    aControl0.array[i3 + v + 2] = control0.z;
+
+                    aControl1.array[i3 + v]     = control1.x;
+                    aControl1.array[i3 + v + 1] = control1.y;
+                    aControl1.array[i3 + v + 2] = control1.z;
+
+                    aEndPosition.array[i3 + v]     = endPosition.x;
+                    aEndPosition.array[i3 + v + 1] = endPosition.y;
+                    aEndPosition.array[i3 + v + 2] = endPosition.z;
+                }
+            }
+
+            var material = new THREE.BAS.BasicAnimationMaterial(
+                {
+                shading: THREE.FlatShading,
+                side: THREE.DoubleSide,
+                uniforms: {
+                    uTime: {type: 'f', value: 0}
+                },
+                shaderFunctions: [
+                    THREE.BAS.ShaderChunk['cubic_bezier'],
+                    //THREE.BAS.ShaderChunk[(animationPhase === 'in' ? 'ease_out_cubic' : 'ease_in_cubic')],
+                    THREE.BAS.ShaderChunk['ease_in_out_cubic'],
+                    THREE.BAS.ShaderChunk['quaternion_rotation']
+                ],
+                shaderParameters: [
+                    'uniform float uTime;',
+                    'attribute vec2 aAnimation;',
+                    'attribute vec3 aStartPosition;',
+                    'attribute vec3 aControl0;',
+                    'attribute vec3 aControl1;',
+                    'attribute vec3 aEndPosition;',
+                ],
+                shaderVertexInit: [
+                    'float tDelay = aAnimation.x;',
+                    'float tDuration = aAnimation.y;',
+                    'float tTime = clamp(uTime - tDelay, 0.0, tDuration);',
+                    'float tProgress = ease(tTime, 0.0, 1.0, tDuration);'
+                    //'float tProgress = tTime / tDuration;'
+                ],
+                shaderTransformPosition: [
+                    (animationPhase === 'in' ? 'transformed *= tProgress;' : 'transformed *= 1.0 - tProgress;'),
+                    'transformed += cubicBezier(aStartPosition, aControl0, aControl1, aEndPosition, tProgress);'
+                ]
+                },
+                {
+                map: new THREE.Texture(),
+                }
+            );
+
+            THREE.Mesh.call(this, geometry, material);
+
+            this.frustumCulled = false;
+        }
+        Slide.prototype = Object.create(THREE.Mesh.prototype);
+        Slide.prototype.constructor = Slide;
+        Object.defineProperty(Slide.prototype, 'time', {
+            get: function () {
+                return this.material.uniforms['uTime'].value;
+            },
+            set: function (v) {
+                this.material.uniforms['uTime'].value = v;
+            }
+        });
+
+        Slide.prototype.setImage = function(image) {
+            this.material.uniforms.map.value.image = image;
+            this.material.uniforms.map.value.needsUpdate = true;
+        };
+
+        Slide.prototype.transition = function() {
+            return TweenMax.fromTo(this, 3.0, {time:0.0}, {time:this.totalDuration, ease:Power0.easeInOut});
+        };
+
+
+        function SlideGeometry(model) {
+            THREE.BAS.ModelBufferGeometry.call(this, model);
+        }
+        SlideGeometry.prototype = Object.create(THREE.BAS.ModelBufferGeometry.prototype);
+        SlideGeometry.prototype.constructor = SlideGeometry;
+        SlideGeometry.prototype.bufferPositions = function () {
+            var positionBuffer = this.createAttribute('position', 3).array;
+
+            for (var i = 0; i < this.faceCount; i++) {
+                var face = this.modelGeometry.faces[i];
+                var centroid = THREE.BAS.Utils.computeCentroid(this.modelGeometry, face);
+
+                var a = this.modelGeometry.vertices[face.a];
+                var b = this.modelGeometry.vertices[face.b];
+                var c = this.modelGeometry.vertices[face.c];
+
+                positionBuffer[face.a * 3]     = a.x - centroid.x;
+                positionBuffer[face.a * 3 + 1] = a.y - centroid.y;
+                positionBuffer[face.a * 3 + 2] = a.z - centroid.z;
+
+                positionBuffer[face.b * 3]     = b.x - centroid.x;
+                positionBuffer[face.b * 3 + 1] = b.y - centroid.y;
+                positionBuffer[face.b * 3 + 2] = b.z - centroid.z;
+
+                positionBuffer[face.c * 3]     = c.x - centroid.x;
+                positionBuffer[face.c * 3 + 1] = c.y - centroid.y;
+                positionBuffer[face.c * 3 + 2] = c.z - centroid.z;
+            }
+        };
+
+
+        function THREERoot(params) {
+            params = utils.extend({
+                fov: 60,
+                zNear: 10,
+                zFar: 100000,
+
+                createCameraControls: true
+            }, params);
+
+            this.renderer = new THREE.WebGLRenderer({
+                antialias: params.antialias,
+                alpha: true
+            });
+            this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+            document.getElementById('three-container').appendChild(this.renderer.domElement);
+
+            this.camera = new THREE.PerspectiveCamera(
+                params.fov,
+                window.innerWidth / window.innerHeight,
+                params.zNear,
+                params.zfar
+            );
+
+            this.scene = new THREE.Scene();
+
+            if (params.createCameraControls) {
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+            }
+
+            this.resize = this.resize.bind(this);
+            this.tick = this.tick.bind(this);
+
+            this.resize();
+            this.tick();
+
+            window.addEventListener('resize', this.resize, false);
+        }
+        THREERoot.prototype = {
+            tick: function () {
+                this.update();
+                this.render();
+                requestAnimationFrame(this.tick);
+            },
+            update: function () {
+                this.controls && this.controls.update();
+            },
+            render: function () {
+                this.renderer.render(this.scene, this.camera);
+            },
+            resize: function () {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        };
+
+        ////////////////////
+        // UTILS
+        ////////////////////
+
+        var utils = {
+            extend: function (dst, src) {
+                for (var key in src) {
+                dst[key] = src[key];
+                }
+
+                return dst;
+            },
+            randSign: function () {
+                return Math.random() > 0.5 ? 1 : -1;
+            },
+            ease: function (ease, t, b, c, d) {
+                return b + ease.getRatio(t / d) * c;
+            },
+            fibSpherePoint: (function () {
+                var vec = {x: 0, y: 0, z: 0};
+                var G = Math.PI * (3 - Math.sqrt(5));
+
+                return function (i, n, radius) {
+                var step = 2.0 / n;
+                var r, phi;
+
+                vec.y = i * step - 1 + (step * 0.5);
+                r = Math.sqrt(1 - vec.y * vec.y);
+                phi = i * G;
+                vec.x = Math.cos(phi) * r;
+                vec.z = Math.sin(phi) * r;
+
+                radius = radius || 1;
+
+                vec.x *= radius;
+                vec.y *= radius;
+                vec.z *= radius;
+
+                return vec;
+                }
+            })(),
+            spherePoint: (function () {
+                return function (u, v) {
+                u === undefined && (u = Math.random());
+                v === undefined && (v = Math.random());
+
+                var theta = 2 * Math.PI * u;
+                var phi = Math.acos(2 * v - 1);
+
+                var vec = {};
+                vec.x = (Math.sin(phi) * Math.cos(theta));
+                vec.y = (Math.sin(phi) * Math.sin(theta));
+                vec.z = (Math.cos(phi));
+
+                return vec;
+                }
+            })()
+        };
+
+        document.addEventListener('DOMContentLoaded', initThreeJSAnimation);
+
     </script>
 </body>
 </html>
