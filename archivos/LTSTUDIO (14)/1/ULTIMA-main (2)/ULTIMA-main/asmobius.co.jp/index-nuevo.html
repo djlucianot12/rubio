@@ -94,6 +94,27 @@
         .intro-text .letter.filled {
             color: white;
         }
+
+        .intro-text-container {
+            position: relative;
+            text-align: center;
+        }
+
+        .intro-loader {
+            width: 100%;
+            height: 2px;
+            background-color: #444;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loader-bar {
+            width: 0%;
+            height: 100%;
+            background-color: white;
+            transition: width 2.5s ease-in-out;
+        }
         
         /* PARTICLES */
         #particles {
@@ -546,7 +567,12 @@
     <!-- INTRO SCREEN -->
     <div id="intro-screen">
         <div id="particles"></div>
-        <div class="intro-text"></div>
+        <div class="intro-text-container">
+            <div class="intro-text"></div>
+            <div class="intro-loader">
+                <div class="loader-bar"></div>
+            </div>
+        </div>
     </div>
 
     <!-- TRANSICIÓN FRAGMENTADA -->
@@ -918,10 +944,11 @@
         function animateIntroText() {
             console.log('📝 Iniciando animación de texto intro');
             const introText = document.querySelector('.intro-text');
+            const loaderBar = document.querySelector('.loader-bar');
             const text = 'LT STUDIO DESIGN';
 
-            if (!introText) {
-                console.error('❌ No se encontró .intro-text');
+            if (!introText || !loaderBar) {
+                console.error('❌ No se encontró .intro-text o .loader-bar');
                 return;
             }
 
@@ -944,6 +971,11 @@
                 setTimeout(() => {
                     letter.classList.add('filled');
                     console.log(`�� Letra ${index + 1} animada`);
+
+                    // Si es la primera letra, iniciar la barra de carga
+                    if (index === 0) {
+                        loaderBar.style.width = '100%';
+                    }
 
                     // Si es la última letra, hacer EXPLOSIÓN ESPECTACULAR
                     if (index === letters.length - 1) {
@@ -1002,6 +1034,9 @@
 
                                 }, i * 100);
                             });
+
+                            // Ocultar la barra de carga
+                            document.querySelector('.intro-loader').style.opacity = '0';
 
                             // Después de 4 segundos, hacer transición final
                             setTimeout(() => {
